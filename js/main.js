@@ -2,7 +2,7 @@ let camera, scene, renderer, cube;
 
 function init() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 15, 0);
     camera.lookAt(0, 0, 0);
     camera.rotation.z = Math.PI;
@@ -33,7 +33,7 @@ function setupLighting() {
     directionalLight.shadow.camera.right = 25;
     directionalLight.shadow.camera.top = 25;
     directionalLight.shadow.camera.bottom = -25;
-    directionalLight.shadow.bias = -0.001;
+    directionalLight.shadow.bias = -0.0001; // -0.001
     scene.add(directionalLight);
 }
 
@@ -41,7 +41,7 @@ function setupPlayer() {
     const geometry = new THREE.BoxGeometry(1, 0.4, 1);
     const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
     cube = new THREE.Mesh(geometry, material);
-    cube.position.y = 1;
+    cube.position.y = 0.4;
     cube.castShadow = true;
     scene.add(cube);
 }
