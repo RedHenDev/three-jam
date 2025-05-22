@@ -19,11 +19,18 @@ function updateMovement() {
 
 function updateVerticalMovement() {
     if (isFlying && cube.position.y < MAX_HEIGHT) {
+        
+        // Let's diminish THRUST_FORCE
+        // relative to proximity to MAX_HEIGHT.
+        const adjusted_thrust =
+            THRUST_FORCE * 
+            (cube.position.y/MAX_HEIGHT);
+        
         velocity += THRUST_FORCE;
     }
     velocity -= GRAVITY;
     velocity = Math.min(Math.max(velocity, -MAX_VELOCITY), MAX_VELOCITY);
-    cube.position.y = Math.min(Math.max(cube.position.y + velocity, GROUND_OFFSET), MAX_HEIGHT);
+    cube.position.y = Math.min(Math.max(cube.position.y + velocity, GROUND_OFFSET), 12);
 
     if (cube.position.y <= GROUND_OFFSET) {
         velocity = 0;
