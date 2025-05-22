@@ -3,9 +3,9 @@ let camera, scene, renderer, cube;
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 15, 0);
+    camera.position.set(0, 10, 0);
     camera.lookAt(0, 0, 0);
-    camera.rotation.z = Math.PI;
+    camera.rotation.z = Math.PI; // This aligns our view with movement controls
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -44,6 +44,21 @@ function setupPlayer() {
     cube.position.y = 0.4;
     cube.castShadow = true;
     scene.add(cube);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    const viewSize = 30;
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    
+    if (aspectRatio > 1) {
+        camera.position.y = viewSize;
+    } else {
+        camera.position.y = viewSize / aspectRatio;
+    }
+    
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function animate() {
