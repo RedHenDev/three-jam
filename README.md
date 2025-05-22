@@ -16,4 +16,8 @@ ideas
     permitted. Simple narrative of getting
     us home.
 
+-nomenclature in-game
+Ricardo Cabello (Mr Doob)
+Zarch (1987) - created by D.J. Braben (David Braben); first a demo called 'Lander' released with new Acorn Archimedes computer, and ported name of 'Virus'; enemies called 'Seeders', which turn pixels of terrain red rather than green, and mutate trees.
+
 to do
