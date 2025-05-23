@@ -6,7 +6,7 @@ const GRAVITY = 0.004;
 const THRUST_FORCE = 0.006; // 0.008
 const MAX_VELOCITY = 0.2;
 const MOVE_ACCEL = 0.002;
-const MOVE_DECEL = 0.001;
+const MOVE_DECEL = 0.04; // 0.001
 const MAX_MOVE_SPEED = 0.2;
 const MAX_HEIGHT = 4;
 const GROUND_FRICTION = 0.15;
@@ -17,9 +17,9 @@ const TERRAIN_SCALE = 0.10;
 const TERRAIN_AMPLITUDE = 2;
 
 // Helper to get terrain height at (x, y)
-function getTerrainHeight(x, y) {
+function getTerrainHeight(x, z) {
     // Perlin.noise expects (x, y) in plane coordinates
-    return Perlin.noise(x * TERRAIN_SCALE, y * TERRAIN_SCALE) * TERRAIN_AMPLITUDE;
+    return Perlin.noise(x * TERRAIN_SCALE, -z * TERRAIN_SCALE) * TERRAIN_AMPLITUDE;
 }
 
 function updateMovement() {
@@ -28,7 +28,9 @@ function updateMovement() {
 }
 
 function updateVerticalMovement() {
-    const groundY = GROUND_OFFSET + getTerrainHeight(cube.position.x, cube.position.z);
+    const groundY = GROUND_OFFSET + 
+    getTerrainHeight(   cube.position.x, 
+                        cube.position.z);
     if (isFlying && cube.position.y < MAX_HEIGHT) {
         
         // Let's diminish THRUST_FORCE
@@ -59,6 +61,7 @@ function updateHorizontalMovement() {
     //     cube.position.y = groundY; // <-- REMOVE or COMMENT OUT this line
     // }
 
+    // For testing collisions of terrain.
     applyAirControls();
     cube.position.y = groundY;
 

@@ -82,9 +82,10 @@ function setupTerrain() {
     }
     planeGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-    const planeMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    const planeMaterial = new THREE.MeshLambertMaterial({ vertexColors: true }); //, side: THREE.DoubleSide
     plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    plane.rotation.x = Math.PI / 2;
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = 0;
     plane.receiveShadow = true;
     scene.add(plane);
 

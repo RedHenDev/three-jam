@@ -35,10 +35,10 @@ function onWindowResize() {
 }
 
 function applyAirControls() {
-    if (keysPressed['ArrowLeft'] || keysPressed['KeyA']) moveVelX += MOVE_ACCEL;
-    if (keysPressed['ArrowRight'] || keysPressed['KeyD']) moveVelX -= MOVE_ACCEL;
-    if (keysPressed['ArrowUp'] || keysPressed['KeyW']) moveVelZ += MOVE_ACCEL;
-    if (keysPressed['ArrowDown'] || keysPressed['KeyS']) moveVelZ -= MOVE_ACCEL;
+    if (keysPressed['ArrowLeft'] || keysPressed['KeyA']) moveVelX -= MOVE_ACCEL;
+    if (keysPressed['ArrowRight'] || keysPressed['KeyD']) moveVelX += MOVE_ACCEL;
+    if (keysPressed['ArrowUp'] || keysPressed['KeyW']) moveVelZ -= MOVE_ACCEL;
+    if (keysPressed['ArrowDown'] || keysPressed['KeyS']) moveVelZ += MOVE_ACCEL;
 
     moveVelX *= (1 - MOVE_DECEL);
     moveVelZ *= (1 - MOVE_DECEL);
