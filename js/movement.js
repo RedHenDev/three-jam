@@ -12,38 +12,56 @@ const MAX_HEIGHT = 4;
 const GROUND_FRICTION = 0.15;
 const GROUND_OFFSET = 0.4;
 
+// Use the same scale and amplitude as in terrain.js
+const TERRAIN_SCALE = 0.10;
+const TERRAIN_AMPLITUDE = 2;
+
+// Helper to get terrain height at (x, y)
+function getTerrainHeight(x, y) {
+    // Perlin.noise expects (x, y) in plane coordinates
+    return Perlin.noise(x * TERRAIN_SCALE, y * TERRAIN_SCALE) * TERRAIN_AMPLITUDE;
+}
+
 function updateMovement() {
-    updateVerticalMovement();
+    //updateVerticalMovement();
     updateHorizontalMovement();
 }
 
 function updateVerticalMovement() {
+    const groundY = GROUND_OFFSET + getTerrainHeight(cube.position.x, cube.position.z);
     if (isFlying && cube.position.y < MAX_HEIGHT) {
         
         // Let's diminish THRUST_FORCE
         // relative to proximity to MAX_HEIGHT.
         const adjusted_thrust =
             THRUST_FORCE * 
-            (cube.position.y/MAX_HEIGHT);
+            (MAX_HEIGHT/cube.position.y);
         
-        velocity += THRUST_FORCE;
+        velocity += adjusted_thrust;
     }
     velocity -= GRAVITY;
     velocity = Math.min(Math.max(velocity, -MAX_VELOCITY), MAX_VELOCITY);
-    cube.position.y = Math.min(Math.max(cube.position.y + velocity, GROUND_OFFSET), 12);
+    cube.position.y = Math.min(Math.max(cube.position.y + velocity, groundY), 12);
 
-    if (cube.position.y <= GROUND_OFFSET) {
+    if (cube.position.y <= groundY) {
         velocity = 0;
     }
 }
 
 function updateHorizontalMovement() {
-    if (cube.position.y > GROUND_OFFSET) {
-        applyAirControls();
-    } else {
-        applyGroundFriction();
-    }
-    
+    const groundY = GROUND_OFFSET + getTerrainHeight(cube.position.x, cube.position.z);
+    // if (cube.position.y > groundY) {
+    //     applyAirControls();
+    // } else {
+    //     applyGroundFriction();
+    //     // Only snap to ground if you want to force the cube to stick to terrain (e.g., in a test mode)
+    //     // Otherwise, let updateVerticalMovement handle y-position.
+    //     cube.position.y = groundY; // <-- REMOVE or COMMENT OUT this line
+    // }
+
+    applyAirControls();
+    cube.position.y = groundY;
+
     moveVelX = Math.max(Math.min(moveVelX, MAX_MOVE_SPEED), -MAX_MOVE_SPEED);
     moveVelZ = Math.max(Math.min(moveVelZ, MAX_MOVE_SPEED), -MAX_MOVE_SPEED);
     
