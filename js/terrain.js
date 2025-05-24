@@ -89,6 +89,6 @@ function setupTerrain() {
     plane.receiveShadow = true;
     scene.add(plane);
 
-    const gridHelper = new THREE.GridHelper(width, segments);
-    scene.add(gridHelper);
+    //const gridHelper = new THREE.GridHelper(width, segments);
+    //scene.add(gridHelper);
 }
