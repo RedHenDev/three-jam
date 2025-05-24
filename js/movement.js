@@ -23,7 +23,7 @@ function getTerrainHeight(x, z) {
 }
 
 function updateMovement() {
-    //updateVerticalMovement();
+    updateVerticalMovement();
     updateHorizontalMovement();
 }
 
@@ -35,9 +35,10 @@ function updateVerticalMovement() {
         
         // Let's diminish THRUST_FORCE
         // relative to proximity to MAX_HEIGHT.
-        const adjusted_thrust =
+        const adjusted_thrust = 
+        Math.abs(
             THRUST_FORCE * 
-            (MAX_HEIGHT/cube.position.y);
+            (MAX_HEIGHT/cube.position.y));
         
         velocity += adjusted_thrust;
     }
@@ -52,18 +53,18 @@ function updateVerticalMovement() {
 
 function updateHorizontalMovement() {
     const groundY = GROUND_OFFSET + getTerrainHeight(cube.position.x, cube.position.z);
-    // if (cube.position.y > groundY) {
-    //     applyAirControls();
-    // } else {
-    //     applyGroundFriction();
-    //     // Only snap to ground if you want to force the cube to stick to terrain (e.g., in a test mode)
-    //     // Otherwise, let updateVerticalMovement handle y-position.
-    //     cube.position.y = groundY; // <-- REMOVE or COMMENT OUT this line
-    // }
+    if (cube.position.y > groundY) {
+        applyAirControls();
+    } else {
+        applyGroundFriction();
+        // Only snap to ground if you want to force the cube to stick to terrain (e.g., in a test mode)
+        // Otherwise, let updateVerticalMovement handle y-position.
+        cube.position.y = groundY + 0.01; // <-- REMOVE or COMMENT OUT this line
+    }
 
     // For testing collisions of terrain.
-    applyAirControls();
-    cube.position.y = groundY;
+    // applyAirControls();
+    // cube.position.y = groundY;
 
     moveVelX = Math.max(Math.min(moveVelX, MAX_MOVE_SPEED), -MAX_MOVE_SPEED);
     moveVelZ = Math.max(Math.min(moveVelZ, MAX_MOVE_SPEED), -MAX_MOVE_SPEED);
