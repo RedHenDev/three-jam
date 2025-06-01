@@ -37,7 +37,6 @@
         <div>Position: <span id="position">0, 0</span></div>
         <div>Chunks: <span id="chunks">0</span></div>
         <div>Height: <span id="height">0</span></div>
-        <div>Biome: <span id="biome">Plains</span></div>
     </div>
     <div id="instructions">
         WASD/Arrow Keys: Move | Space: Fly | F: Fullscreen
@@ -45,87 +44,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // ===========================================
-        // BIOME CONFIGURATION - EASY TO MODIFY!
-        // ===========================================
-        const BIOME_CONFIG = {
-            // Biome definitions - easily customizable!
-            biomes: {
-                OCEAN: {
-                    name: "Ocean",
-                    baseHeight: -8,
-                    heightVariation: 2,
-                    color: { h: 0.6, s: 0.8, l: 0.3 },
-                    scale: 0.01,
-                    octaves: 3
-                },
-                PLAINS: {
-                    name: "Plains", 
-                    baseHeight: 0,
-                    heightVariation: 4,
-                    color: { h: 0.25, s: 0.6, l: 0.4 },
-                    scale: 0.02,
-                    octaves: 4
-                },
-                FOREST: {
-                    name: "Forest",
-                    baseHeight: 2,
-                    heightVariation: 6,
-                    color: { h: 0.33, s: 0.8, l: 0.25 },
-                    scale: 0.025,
-                    octaves: 5
-                },
-                DESERT: {
-                    name: "Desert",
-                    baseHeight: 1,
-                    heightVariation: 8,
-                    color: { h: 0.12, s: 0.7, l: 0.5 },
-                    scale: 0.015,
-                    octaves: 3
-                },
-                MOUNTAINS: {
-                    name: "Mountains",
-                    baseHeight: 5,
-                    heightVariation: 25,
-                    color: { h: 0.08, s: 0.4, l: 0.4 },
-                    scale: 0.008,
-                    octaves: 6
-                },
-                TUNDRA: {
-                    name: "Tundra",
-                    baseHeight: 3,
-                    heightVariation: 3,
-                    color: { h: 0.55, s: 0.3, l: 0.6 },
-                    scale: 0.02,
-                    octaves: 4
-                },
-                VOLCANIC: {
-                    name: "Volcanic",
-                    baseHeight: 8,
-                    heightVariation: 15,
-                    color: { h: 0.0, s: 0.9, l: 0.2 },
-                    scale: 0.012,
-                    octaves: 5
-                }
-            },
-            
-            // Biome distribution settings
-            biomeScale: 0.003, // How large biome regions are
-            temperatureScale: 0.002,
-            humidityScale: 0.0025,
-            
-            // Cave settings
-            caves: {
-                enabled: true,
-                threshold: 0.6, // Higher = fewer caves
-                scale: 0.05,
-                verticalScale: 0.1,
-                minDepth: -2, // Caves only below this height
-                tunnelWidth: 2
-            }
-        };
-
-        // ===========================================
         // Enhanced Perlin Noise implementation
         const Perlin = {
             grad3: [
@@ -182,111 +100,9 @@
                 }
                 
                 return value / maxValue;
-            },
-            
-            // 3D noise for caves
-            noise3D: function(x, y, z) {
-                // Simple 3D noise by combining 2D noise at different offsets
-                const xy = this.noise(x, y);
-                const xz = this.noise(x, z + 1000);
-                const yz = this.noise(y + 2000, z + 3000);
-                return (xy + xz + yz) / 3;
             }
         };
         Perlin.init();
-
-        // Biome Generator - handles biome distribution and terrain generation
-        const BiomeGenerator = {
-            getBiome(x, z) {
-                // Generate temperature and humidity maps
-                const temperature = Perlin.octaveNoise(x, z, 3, 0.5, BIOME_CONFIG.temperatureScale);
-                const humidity = Perlin.octaveNoise(x + 1000, z + 1000, 3, 0.5, BIOME_CONFIG.humidityScale);
-                
-                // Use temperature and humidity to determine biome
-                if (temperature < -0.3) {
-                    return BIOME_CONFIG.biomes.TUNDRA;
-                } else if (temperature > 0.4 && humidity < -0.2) {
-                    return BIOME_CONFIG.biomes.DESERT;
-                } else if (temperature > 0.2 && humidity > 0.3) {
-                    return BIOME_CONFIG.biomes.FOREST;
-                } else if (humidity < -0.4) {
-                    return BIOME_CONFIG.biomes.OCEAN;
-                } else if (temperature > 0.5 && Math.abs(humidity) < 0.1) {
-                    return BIOME_CONFIG.biomes.VOLCANIC;
-                } else if (temperature > 0.3 && humidity > 0.2) {
-                    return BIOME_CONFIG.biomes.MOUNTAINS;
-                } else {
-                    return BIOME_CONFIG.biomes.PLAINS;
-                }
-            },
-            
-            getHeight(x, z) {
-                const biome = this.getBiome(x, z);
-                
-                // Generate base terrain noise
-                const noise = Perlin.octaveNoise(x, z, biome.octaves, 0.5, biome.scale);
-                
-                // Apply biome-specific height parameters
-                return biome.baseHeight + (noise * biome.heightVariation);
-            },
-            
-            getColor(x, z, height) {
-                const biome = this.getBiome(x, z);
-                
-                // Start with base biome color
-                let color = { ...biome.color };
-                
-                // Modify color based on height
-                const heightFactor = Math.max(0, Math.min(1, (height + 10) / 30));
-                color.l = Math.max(0.1, Math.min(0.9, color.l + (heightFactor - 0.5) * 0.3));
-                
-                // Add some variation based on position
-                const variation = Perlin.noise(x * 0.1, z * 0.1) * 0.1;
-                color.s = Math.max(0.1, Math.min(1, color.s + variation));
-                
-                // Convert HSL to RGB
-                return this.hslToRgb(color.h, color.s, color.l);
-            },
-            
-            isCave(x, y, z) {
-                if (!BIOME_CONFIG.caves.enabled || y > BIOME_CONFIG.caves.minDepth) {
-                    return false;
-                }
-                
-                const caveNoise = Perlin.noise3D(
-                    x * BIOME_CONFIG.caves.scale,
-                    y * BIOME_CONFIG.caves.verticalScale,
-                    z * BIOME_CONFIG.caves.scale
-                );
-                
-                return caveNoise > BIOME_CONFIG.caves.threshold;
-            },
-            
-            hslToRgb(h, s, l) {
-                let r, g, b;
-                
-                if (s === 0) {
-                    r = g = b = l; // achromatic
-                } else {
-                    const hue2rgb = (p, q, t) => {
-                        if (t < 0) t += 1;
-                        if (t > 1) t -= 1;
-                        if (t < 1/6) return p + (q - p) * 6 * t;
-                        if (t < 1/2) return q;
-                        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                        return p;
-                    };
-                    
-                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                    const p = 2 * l - q;
-                    r = hue2rgb(p, q, h + 1/3);
-                    g = hue2rgb(p, q, h);
-                    b = hue2rgb(p, q, h - 1/3);
-                }
-                
-                return { r, g, b };
-            }
-        };
 
         // Terrain system
         class TerrainChunk {
@@ -302,51 +118,80 @@
             generate() {
                 const geometry = new THREE.PlaneGeometry(this.size, this.size, this.segments, this.segments);
                 
-                // Calculate the step size between vertices
-                const stepX = this.size / this.segments;
-                const stepZ = this.size / this.segments;
+                // Generate heightmap with multiple octaves for more interesting terrain
+                const scale = 0.02;
+                const amplitude = 8;
                 
-                // Get the position array for direct manipulation
-                const positions = geometry.attributes.position.array;
-                const colors = [];
-                
-                // Generate heightmap and colors using biome system
                 for (let i = 0; i < geometry.attributes.position.count; i++) {
-                    // Calculate which vertex we're at in the grid
-                    const vertexIndex = i;
-                    const row = Math.floor(vertexIndex / (this.segments + 1));
-                    const col = vertexIndex % (this.segments + 1);
+                    const x = geometry.attributes.position.getX(i) + this.x * this.size;
+                    const y = geometry.attributes.position.getY(i) + this.z * this.size;
                     
-                    // Calculate world coordinates by snapping to grid alignment
-                    const worldX = (this.x * this.size) + (col * stepX) - (this.size / 2);
-                    const worldZ = (this.z * this.size) + (row * stepZ) - (this.size / 2);
+                    // Multiple octaves for varied terrain
+                    let height = 0;
+                    height += Perlin.octaveNoise(x, y, 6, 0.5, scale) * amplitude;
+                    height += Perlin.octaveNoise(x, y, 4, 0.3, scale * 4) * amplitude * 0.3;
                     
-                    // Get height from biome system
-                    let height = BiomeGenerator.getHeight(worldX, worldZ);
-                    
-                    // Check for caves
-                    if (BIOME_CONFIG.caves.enabled && BiomeGenerator.isCave(worldX, height, worldZ)) {
-                        height -= BIOME_CONFIG.caves.tunnelWidth;
-                    }
-                    
-                    // Set the height directly in the positions array
-                    positions[i * 3 + 2] = height; // Z component is height
-                    
-                    // Get color from biome system
-                    const color = BiomeGenerator.getColor(worldX, worldZ, height);
-                    colors.push(color.r, color.g, color.b);
+                    geometry.attributes.position.setZ(i, height);
                 }
-                
-                // Mark the position attribute as needing update
-                geometry.attributes.position.needsUpdate = true;
                 
                 geometry.computeVertexNormals();
                 
-                // Set vertex colors
+                // Enhanced coloring based on height and slope
+                const colors = [];
+                const pos = geometry.attributes.position;
+                const normals = geometry.attributes.normal;
+                
+                for (let i = 0; i < pos.count; i++) {
+                    colors.push(0, 0, 0);
+                }
+                
+                const color = new THREE.Color();
+                for (let i = 0; i < geometry.index.count; i += 3) {
+                    const a = geometry.index.getX(i);
+                    const b = geometry.index.getX(i+1);
+                    const c = geometry.index.getX(i+2);
+                    
+                    const ha = pos.getZ(a), hb = pos.getZ(b), hc = pos.getZ(c);
+                    const avgHeight = (ha + hb + hc) / 3;
+                    
+                    // Get average normal for slope calculation
+                    const nx = (normals.getX(a) + normals.getX(b) + normals.getX(c)) / 3;
+                    const ny = (normals.getY(a) + normals.getY(b) + normals.getY(c)) / 3;
+                    const nz = (normals.getZ(a) + normals.getZ(b) + normals.getZ(c)) / 3;
+                    const slope = 1 - ny; // steeper = higher value
+                    
+                    // Color based on height and slope
+                    let hue = 0.25; // green base
+                    let saturation = 0.8;
+                    let lightness = 0.3 + 0.4 * Math.max(0, Math.min(1, (avgHeight + amplitude) / (amplitude * 2)));
+                    
+                    // Rocky areas on steep slopes
+                    if (slope > 0.3) {
+                        hue = 0.08; // brown/orange
+                        saturation = 0.6;
+                        lightness *= 0.8;
+                    }
+                    // Snow on high peaks
+                    else if (avgHeight > amplitude * 0.7) {
+                        hue = 0;
+                        saturation = 0;
+                        lightness = 0.9;
+                    }
+                    
+                    color.setHSL(hue, saturation, lightness);
+                    
+                    [a, b, c].forEach(idx => {
+                        colors[idx*3] = color.r;
+                        colors[idx*3+1] = color.g;
+                        colors[idx*3+2] = color.b;
+                    });
+                }
+                
                 geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
                 
                 const material = new THREE.MeshLambertMaterial({ 
-                    vertexColors: true
+                    vertexColors: true,
+                    side: THREE.DoubleSide
                 });
                 
                 this.mesh = new THREE.Mesh(geometry, material);
@@ -422,7 +267,15 @@
             }
 
             getTerrainHeight(x, z) {
-                return BiomeGenerator.getHeight(x, z);
+                // Use the same noise function as chunk generation
+                const scale = 0.02;
+                const amplitude = 8;
+                
+                let height = 0;
+                height += Perlin.octaveNoise(x, z, 6, 0.5, scale) * amplitude;
+                height += Perlin.octaveNoise(x, z, 4, 0.3, scale * 4) * amplitude * 0.3;
+                
+                return height;
             }
 
             getChunkCount() {
@@ -622,12 +475,10 @@
         }
 
         function updateUI() {
-            const currentBiome = BiomeGenerator.getBiome(cube.position.x, cube.position.z);
             document.getElementById('position').textContent = 
                 `${Math.round(cube.position.x)}, ${Math.round(cube.position.z)}`;
             document.getElementById('chunks').textContent = terrainManager.getChunkCount();
             document.getElementById('height').textContent = Math.round(cube.position.y);
-            document.getElementById('biome').textContent = currentBiome.name;
         }
 
         function animate() {
